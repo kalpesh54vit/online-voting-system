@@ -3,64 +3,47 @@
 <head>
 <title>Online Voting System</title>
 
-<style>
-body {
-  font-family: Arial;
-  background:#95edda;
-  text-align:center;
-  margin:0;
-}
+<!-- Firebase SDKs (COMPAT – REQUIRED) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-input, textarea, select {
+<style>
+body{
+  font-family:Arial;
+  margin:0;
+  text-align:center;
+  background:#95edda;
+}
+.section{
+  display:none;
+  width:520px;
+  margin:40px auto;
+  background:#a3fffd;
+  padding:20px;
+  border-radius:6px;
+}
+input,select,textarea{
+  width:260px;
   padding:8px;
   margin:5px;
-  width:260px;
 }
-
-button {
+button{
   padding:8px 14px;
   margin:4px;
   cursor:pointer;
 }
+.danger{background:red;color:white}
+.small{font-size:12px}
 
-.section {
-  display:none;
-  background:#a3fffd;
-  padding:20px;
-  margin:40px auto;
-  width:520px;
-  border-radius:6px;
-}
-
-h2 { color:#333; }
-hr { margin:15px 0; }
-
-.danger {
-  background:#ff0000;
-  color:rgb(0, 0, 0);
-}
-
-.small { font-size:13px; }
-
-/* 🔥 DASHBOARD BACKGROUND IMAGE */
-#dashboard {
+/* Dashboard background */
+#dashboard{
   display:block;
-  background: url('dashboard.jpg') no-repeat center center/cover;
-  color:rgb(164, 232, 252);
+  background:url('dashboard.jpg') center/cover no-repeat;
   min-height:70vh;
-  box-shadow:0 0 15px rgba(0,0,0,0.5);
+  color:white;
 }
-
-/* Dashboard content box */
-#dashboard input,
-#dashboard select {
-  background: rgb(164, 232, 252);
-  color:black;
-}
-
-#dashboard h2 {
-  color:rgb(164, 232, 252);
-}
+table{width:100%}
 </style>
 </head>
 
@@ -69,7 +52,7 @@ hr { margin:15px 0; }
 <h1>Online Voting System</h1>
 
 <!-- DASHBOARD -->
-<div class="section" id="dashboard" style="display:block">
+<div class="section" id="dashboard">
   <h2>Login</h2>
   <input id="loginEmail" placeholder="Email">
   <input id="loginPass" type="password" placeholder="Password">
@@ -116,77 +99,90 @@ hr { margin:15px 0; }
 <div class="section" id="admin">
   <h2>Admin Panel</h2>
 
-  <h3>Voters (Remove Option)</h3>
-  <table border="1" width="100%" cellpadding="5">
-  <thead>
-    <tr>
-      <th>Sr. No</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody id="voterList"></tbody>
-</table>
-
+  <h3>Voters</h3>
+  <table border="1">
+    <thead>
+      <tr><th>Sr</th><th>Name</th><th>Email</th><th>Action</th></tr>
+    </thead>
+    <tbody id="voterList"></tbody>
+  </table>
 
   <hr>
 
-  <h3>Candidates (Remove Option)</h3>
+  <h3>Candidates</h3>
   <div id="candidateAdminList"></div>
 
   <hr>
 
-  <h3>Votes Per Candidate</h3>
+  <h3>Votes Count</h3>
   <div id="voteCount"></div>
 
   <hr>
 
-  <h3>Election Result</h3>
+  <h3>Winner</h3>
   <div id="winnerResult"></div>
 
   <hr>
 
-  <h3>Voting Details</h3>
-  <div id="voteDetails"></div>
-
-  <hr>
-
-  <h3>Election Control</h3>
   <button class="danger" onclick="reElection()">Re-Election</button>
-
   <br><br>
   <button onclick="logout()">Logout</button>
 </div>
 
 <script>
-let users = JSON.parse(localStorage.getItem("users") || "[]");
-let votes = JSON.parse(localStorage.getItem("votes") || "[]");
-let currentUser = null;
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyBfr0s3O5ye6foW2OTBSZFoKxY4mTXGwNA",
+  authDomain: "online-voting-system-f4c94.firebaseapp.com",
+  projectId: "online-voting-system-f4c94",
+  storageBucket: "online-voting-system-f4c94.appspot.com",
+  messagingSenderId: "1030551966815",
+  appId: "1:1030551966815:web:c5321ce23052a9410877ea"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 /* UTIL */
 function show(id){
   document.querySelectorAll(".section").forEach(s=>s.style.display="none");
   document.getElementById(id).style.display="block";
 }
-function logout(){ currentUser=null; show("dashboard"); }
+function logout(){
+  auth.signOut();
+  show("dashboard");
+}
 
 /* REGISTER */
 function register(){
   if(!remail.value.endsWith("@vit.edu"))
     return alert("Only VIT email allowed");
 
-  users.push({
-    name:rname.value,
-    email:remail.value,
-    pass:rpass.value,
-    role:rrole.value,
-    voted:false,
-    manifesto:""
-  });
-  localStorage.setItem("users",JSON.stringify(users));
-  alert("Registered successfully");
-  show("dashboard");
+  auth.createUserWithEmailAndPassword(remail.value,rpass.value)
+  .then(cred=>{
+    const uid=cred.user.uid;
+    if(rrole.value==="voter"){
+      return db.collection("voters").doc(uid).set({
+        name:rname.value,
+        email:remail.value,
+        hasVoted:false,
+        votedFor:null
+      });
+    }else{
+      return db.collection("candidates").doc(uid).set({
+        name:rname.value,
+        email:remail.value,
+        manifesto:"",
+        votes:0
+      });
+    }
+  })
+  .then(()=>{
+    alert("Registered successfully");
+    show("dashboard");
+  })
+  .catch(e=>alert(e.message));
 }
 
 /* LOGIN */
@@ -197,53 +193,59 @@ function login(){
 
   if(role==="admin"){
     if(email==="kalpeshborse9921@gmail.com" && pass==="Kal@pesh123"){
-      show("admin"); loadAdmin();
+      show("admin");
+      loadAdmin();
       return;
     }
-    return alert("Invalid admin login");
+    return alert("Invalid admin");
   }
 
-  let user = users.find(u=>u.email===email && u.pass===pass && u.role===role);
-  if(!user) return alert("Invalid login");
-
-  currentUser=user;
-  role==="voter" ? (show("voter"), loadCandidates()) :
-  (show("candidate"));
+  auth.signInWithEmailAndPassword(email,pass)
+  .then(()=>{
+    role==="voter" ? (show("voter"),loadCandidates()) : show("candidate");
+  })
+  .catch(e=>alert(e.message));
 }
 
 /* VOTER */
 function loadCandidates(){
-  let div=candidateList;
-  div.innerHTML="";
-  if(currentUser.voted) return div.innerHTML="You already voted";
-
-  let cands=users.filter(u=>u.role==="candidate");
-  if(cands.length===0) return div.innerHTML="No candidates available";
-
-  cands.forEach(c=>{
-    div.innerHTML+=`
-      <input type="radio" name="vote" value="${c.email}"> ${c.name}<br>`;
+  db.collection("candidates").onSnapshot(snap=>{
+    candidateList.innerHTML="";
+    snap.forEach(doc=>{
+      let c=doc.data();
+      candidateList.innerHTML+=`
+        <input type="radio" name="vote" value="${doc.id}">
+        <b>${c.name}</b><br>${c.manifesto}<br><br>`;
+    });
+    candidateList.innerHTML+=`<button onclick="vote()">Vote</button>`;
   });
-  div.innerHTML+=`<button onclick="vote()">Vote</button>`;
 }
+
 function vote(){
-  let c=document.querySelector('input[name="vote"]:checked');
-  if(!c) return alert("Select a candidate");
+  let c=document.querySelector("input[name='vote']:checked");
+  if(!c) return alert("Select candidate");
 
-  votes.push({voter:currentUser.email,candidate:c.value});
-  currentUser.voted=true;
+  let uid=auth.currentUser.uid;
+  let voterRef=db.collection("voters").doc(uid);
+  let candRef=db.collection("candidates").doc(c.value);
 
-  localStorage.setItem("votes",JSON.stringify(votes));
-  localStorage.setItem("users",JSON.stringify(users));
-  alert("Vote submitted");
-  loadCandidates();
+  db.runTransaction(async t=>{
+    let v=await t.get(voterRef);
+    if(v.data().hasVoted) throw "Already voted";
+
+    t.update(voterRef,{hasVoted:true,votedFor:c.value});
+    t.update(candRef,{votes:firebase.firestore.FieldValue.increment(1)});
+  })
+  .then(()=>alert("Vote submitted"))
+  .catch(e=>alert(e));
 }
 
 /* CANDIDATE */
 function saveManifesto(){
-  currentUser.manifesto=manifesto.value;
-  localStorage.setItem("users",JSON.stringify(users));
-  candMsg.innerHTML="Manifesto saved";
+  let uid=auth.currentUser.uid;
+  db.collection("candidates").doc(uid)
+  .update({manifesto:manifesto.value})
+  .then(()=>candMsg.innerHTML="Saved");
 }
 
 /* ADMIN */
@@ -251,143 +253,81 @@ function loadAdmin(){
   loadVoters();
   loadCandidatesAdmin();
   loadVoteCount();
-  loadWinner();
-  loadVoteDetails();
 }
 
-/* ADMIN – VOTERS */
 function loadVoters(){
-  voterList.innerHTML = "";
-
-  let voters = users.filter(u => u.role === "voter");
-
-  if(voters.length === 0){
-    voterList.innerHTML = `
+  db.collection("voters").onSnapshot(snap=>{
+    voterList.innerHTML="";
+    let i=1;
+    snap.forEach(d=>{
+      let v=d.data();
+      voterList.innerHTML+=`
       <tr>
-        <td colspan="4">No voters registered</td>
-      </tr>
-    `;
-    return;
-  }
-
-  voters.forEach((v, index) => {
-    voterList.innerHTML += `
-      <tr>
-        <td>${index + 1}</td>
+        <td>${i++}</td>
         <td>${v.name}</td>
         <td>${v.email}</td>
-        <td>
-          <button class="danger small" onclick="removeVoter('${v.email}')">
-            Remove
-          </button>
-        </td>
-      </tr>
-    `;
+        <td><button class="danger small"
+          onclick="removeVoter('${d.id}')">Remove</button></td>
+      </tr>`;
+    });
   });
 }
-
-function removeVoter(email){
-  if(!confirm("Remove this voter?")) return;
-  users = users.filter(u=>u.email!==email);
-  votes = votes.filter(v=>v.voter!==email);
-  localStorage.setItem("users",JSON.stringify(users));
-  localStorage.setItem("votes",JSON.stringify(votes));
-  loadAdmin();
+function removeVoter(id){
+  if(confirm("Remove voter?"))
+    db.collection("voters").doc(id).delete();
 }
 
-/* ADMIN – CANDIDATES */
 function loadCandidatesAdmin(){
-  candidateAdminList.innerHTML="";
-  users.filter(u=>u.role==="candidate").forEach(c=>{
-    candidateAdminList.innerHTML+=`
-      ${c.name} (${c.email})
-      <button class="danger small" onclick="removeCandidate('${c.email}')">Remove</button><br>`;
+  db.collection("candidates").onSnapshot(snap=>{
+    candidateAdminList.innerHTML="";
+    voteCount.innerHTML="";
+    let arr=[];
+    snap.forEach(d=>{
+      let c=d.data();
+      arr.push(c);
+      candidateAdminList.innerHTML+=`
+        ${c.name} (${c.email})
+        <button class="danger small"
+        onclick="removeCandidate('${d.id}')">Remove</button><br>`;
+      voteCount.innerHTML+=`${c.name}: ${c.votes} votes<br>`;
+    });
+    showWinner(arr);
   });
 }
-function removeCandidate(email){
-  if(!confirm("Remove this candidate?")) return;
-  users = users.filter(u=>u.email!==email);
-  votes = votes.filter(v=>v.candidate!==email);
-  localStorage.setItem("users",JSON.stringify(users));
-  localStorage.setItem("votes",JSON.stringify(votes));
-  loadAdmin();
+function removeCandidate(id){
+  if(confirm("Remove candidate?"))
+    db.collection("candidates").doc(id).delete();
 }
 
-/* RESULTS */
-function loadVoteCount(){
-  voteCount.innerHTML="";
-  users.filter(u=>u.role==="candidate").forEach(c=>{
-    let count=votes.filter(v=>v.candidate===c.email).length;
-    voteCount.innerHTML+=`${c.name} : ${count} votes<br>`;
-  });
-}
-
-function loadWinner(){
-  let candidates = users.filter(u => u.role === "candidate");
-
-  if(candidates.length === 0){
-    winnerResult.innerHTML = "No candidates available";
+function showWinner(arr){
+  if(arr.length===0){
+    winnerResult.innerHTML="No candidates";
     return;
   }
-
-  let result = candidates.map(c => ({
-    name: c.name,
-    email: c.email,
-    votes: votes.filter(v => v.candidate === c.email).length
-  }));
-
-  result.sort((a,b) => b.votes - a.votes);
-
-  if(result[0].votes === 0){
-    winnerResult.innerHTML = "No votes cast yet";
-    return;
+  arr.sort((a,b)=>b.votes-a.votes);
+  let top=arr[0].votes;
+  let tied=arr.filter(x=>x.votes===top);
+  if(top===0 || tied.length>1){
+    winnerResult.innerHTML="No Winner (Tie / No votes)";
+  }else{
+    let margin=arr[0].votes-(arr[1]?.votes||0);
+    winnerResult.innerHTML=
+      `${arr[0].name} wins by ${margin} vote(s)`;
   }
-
-  // 🔥 TIE CHECK
-  let topVotes = result[0].votes;
-  let tiedCandidates = result.filter(r => r.votes === topVotes);
-
-  if(tiedCandidates.length > 1){
-    winnerResult.innerHTML = `
-      ⚠ <b>No Winner</b><br>
-      Election Tied between ${tiedCandidates.length} candidates<br>
-      🗳 Votes each: ${topVotes}
-    `;
-    return;
-  }
-
-  // ✅ CLEAR WINNER
-  let winner = result[0];
-  let runnerUpVotes = result[1] ? result[1].votes : 0;
-  let margin = winner.votes - runnerUpVotes;
-
-  winnerResult.innerHTML = `
-    🏆 <b>Winner:</b> ${winner.name}<br>
-    🗳 <b>Total Votes:</b> ${winner.votes}<br>
-    📊 <b>Winning Margin:</b> ${margin} vote(s)
-  `;
-}
-
-function loadVoteDetails(){
-  voteDetails.innerHTML="";
-  if(votes.length===0) return voteDetails.innerHTML="No votes yet";
-  votes.forEach(v=>{
-    voteDetails.innerHTML+=`${v.voter} voted for ${v.candidate}<br>`;
-  });
 }
 
 /* RE-ELECTION */
 function reElection(){
-  if(!confirm("Delete all candidates and votes?")) return;
-  users = users.filter(u=>u.role!=="candidate");
-  users.forEach(u=>{ if(u.role==="voter") u.voted=false; });
-  votes=[];
-  localStorage.setItem("users",JSON.stringify(users));
-  localStorage.setItem("votes",JSON.stringify(votes));
-  loadAdmin();
+  if(!confirm("Start re-election?")) return;
+
+  db.collection("candidates").get().then(s=>{
+    s.forEach(d=>d.ref.delete());
+  });
+  db.collection("voters").get().then(s=>{
+    s.forEach(d=>d.ref.update({hasVoted:false,votedFor:null}));
+  });
 }
 </script>
 
 </body>
 </html>
-
