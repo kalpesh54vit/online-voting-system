@@ -1,333 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Online Voting System</title>
-
-<!-- Firebase SDKs (COMPAT – REQUIRED) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<style>
-body{
-  font-family:Arial;
-  margin:0;
-  text-align:center;
-  background:#95edda;
-}
-.section{
-  display:none;
-  width:520px;
-  margin:40px auto;
-  background:#a3fffd;
-  padding:20px;
-  border-radius:6px;
-}
-input,select,textarea{
-  width:260px;
-  padding:8px;
-  margin:5px;
-}
-button{
-  padding:8px 14px;
-  margin:4px;
-  cursor:pointer;
-}
-.danger{background:red;color:white}
-.small{font-size:12px}
-
-/* Dashboard background */
-#dashboard{
-  display:block;
-  background:url('dashboard.jpg') center/cover no-repeat;
-  min-height:70vh;
-  color:white;
-}
-table{width:100%}
-</style>
+    <title>Online Voting System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-
 <body>
 
 <h1>Online Voting System</h1>
 
-<!-- DASHBOARD -->
+<!-- ================= DASHBOARD ================= -->
 <div class="section" id="dashboard">
-  <h2>Login</h2>
-  <input id="loginEmail" placeholder="Email">
-  <input id="loginPass" type="password" placeholder="Password">
-  <select id="loginRole">
-    <option value="voter">Voter</option>
-    <option value="candidate">Candidate</option>
-    <option value="admin">Admin</option>
-  </select><br>
-  <button onclick="login()">Login</button>
-  <button onclick="show('register')">Register</button>
+    <h2>Login</h2>
+
+    <input id="loginEmail" placeholder="Email">
+    <br>
+    <input id="loginPass" type="password" placeholder="Password">
+    <br>
+
+    <select id="loginRole">
+        <option value="voter">Voter</option>
+        <option value="candidate">Candidate</option>
+    </select><br>
+
+    <button onclick="login()">Login</button>
+    <button onclick="show('register')">Register</button>
 </div>
 
-<!-- REGISTER -->
-<div class="section" id="register">
-  <h2>Register</h2>
-  <input id="rname" placeholder="Name">
-  <input id="remail" placeholder="VIT Email">
-  <input id="rpass" type="password" placeholder="Password">
-  <select id="rrole">
-    <option value="voter">Voter</option>
-    <option value="candidate">Candidate</option>
-  </select><br>
-  <button onclick="register()">Submit</button>
-  <button onclick="show('dashboard')">Back</button>
+<!-- ================= REGISTER ================= -->
+<div class="section" id="register" style="display:none;">
+    <h2>Register</h2>
+
+    <input id="rname" placeholder="Full Name">
+    <br>
+    <input id="remail" placeholder="Email">
+    <br>
+    <input id="rpass" type="password" placeholder="Password">
+    <br>
+
+    <select id="rrole">
+        <option value="voter">Voter</option>
+        <option value="candidate">Candidate</option>
+    </select><br>
+
+    <button onclick="register()">Submit</button>
+    <button onclick="show('dashboard')">Back</button>
 </div>
 
-<!-- VOTER -->
-<div class="section" id="voter">
-  <h2>Voter Panel</h2>
-  <div id="candidateList"></div>
-  <button onclick="logout()">Logout</button>
+<!-- ================= VOTER PANEL ================= -->
+<div class="section" id="voter" style="display:none;">
+    <h2>Voter Panel</h2>
+    <div id="candidateList"></div>
+    <button onclick="logout()">Logout</button>
 </div>
 
-<!-- CANDIDATE -->
-<div class="section" id="candidate">
-  <h2>Candidate Panel</h2>
-  <textarea id="manifesto" placeholder="Enter manifesto"></textarea><br>
-  <button onclick="saveManifesto()">Save Manifesto</button>
-  <p id="candMsg"></p>
-  <button onclick="logout()">Logout</button>
+<!-- ================= CANDIDATE PANEL ================= -->
+<div class="section" id="candidate" style="display:none;">
+    <h2>Candidate Panel</h2>
+
+    <textarea id="manifesto" placeholder="Enter your manifesto here..." 
+        style="width:90%; height:100px;"></textarea><br>
+
+    <button onclick="saveManifesto()">Save Manifesto</button>
+    <p id="candMsg"></p>
+
+    <button onclick="logout()">Logout</button>
 </div>
 
-<!-- ADMIN -->
-<div class="section" id="admin">
-  <h2>Admin Panel</h2>
+<!-- ================= ADMIN PANEL ================= -->
+<div class="section" id="adminPanel" style="display:none;">
+    <h2>Admin Dashboard</h2>
+    <h3>Election Schedule</h3>
 
-  <h3>Voters</h3>
-  <table border="1">
-    <thead>
-      <tr><th>Sr</th><th>Name</th><th>Email</th><th>Action</th></tr>
-    </thead>
-    <tbody id="voterList"></tbody>
-  </table>
+    <label>Start Date & Time:</label>
+    <input type="datetime-local" id="startDate">
 
-  <hr>
+    <label>End Date & Time:</label>
+    <input type="datetime-local" id="endDate">
 
-  <h3>Candidates</h3>
-  <div id="candidateAdminList"></div>
+    <button onclick="saveElectionSchedule()">Save Schedule</button>
 
-  <hr>
+    <hr>
 
-  <h3>Votes Count</h3>
-  <div id="voteCount"></div>
 
-  <hr>
+    <div id="adminResults"></div>
 
-  <h3>Winner</h3>
-  <div id="winnerResult"></div>
+    <hr>
+    <hr>
+    <button onclick="exportResultsToExcel()">📁 Export Results</button>
+    <button onclick="showVoters()">👁️View Voters</button>
+    <button onclick="showCandidates()">👁️View Candidates</button>
+    <button onclick="toggleElection()" id="electionBtn"></button>
+    <button onclick="reelection()">⭕Re-election</button>
+    <button onclick="logout()">Logout</button>
 
-  <hr>
-
-  <button class="danger" onclick="reElection()">Re-Election</button>
-  <br><br>
-  <button onclick="logout()">Logout</button>
+    <hr>
+    <div id="adminContent"></div>
+    <hr>
 </div>
 
-<script>
-/* 🔥 FIREBASE CONFIG */
-const firebaseConfig = {
-  apiKey: "AIzaSyBfr0s3O5ye6foW2OTBSZFoKxY4mTXGwNA",
-  authDomain: "online-voting-system-f4c94.firebaseapp.com",
-  projectId: "online-voting-system-f4c94",
-  storageBucket: "online-voting-system-f4c94.appspot.com",
-  messagingSenderId: "1030551966815",
-  appId: "1:1030551966815:web:c5321ce23052a9410877ea"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* UTIL */
-function show(id){
-  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
-}
-function logout(){
-  auth.signOut();
-  show("dashboard");
-}
-
-/* REGISTER */
-function register(){
-  if(!remail.value.endsWith("@vit.edu"))
-    return alert("Only VIT email allowed");
-
-  auth.createUserWithEmailAndPassword(remail.value,rpass.value)
-  .then(cred=>{
-    const uid=cred.user.uid;
-    if(rrole.value==="voter"){
-      return db.collection("voters").doc(uid).set({
-        name:rname.value,
-        email:remail.value,
-        hasVoted:false,
-        votedFor:null
-      });
-    }else{
-      return db.collection("candidates").doc(uid).set({
-        name:rname.value,
-        email:remail.value,
-        manifesto:"",
-        votes:0
-      });
-    }
-  })
-  .then(()=>{
-    alert("Registered successfully");
-    show("dashboard");
-  })
-  .catch(e=>alert(e.message));
-}
-
-/* LOGIN */
-function login(){
-  let email=loginEmail.value;
-  let pass=loginPass.value;
-  let role=loginRole.value;
-
-  if(role==="admin"){
-    if(email==="kalpeshborse9921@gmail.com" && pass==="Kal@pesh123"){
-      show("admin");
-      loadAdmin();
-      return;
-    }
-    return alert("Invalid admin");
-  }
-
-  auth.signInWithEmailAndPassword(email,pass)
-  .then(()=>{
-    role==="voter" ? (show("voter"),loadCandidates()) : show("candidate");
-  })
-  .catch(e=>alert(e.message));
-}
-
-/* VOTER */
-function loadCandidates(){
-  db.collection("candidates").onSnapshot(snap=>{
-    candidateList.innerHTML="";
-    snap.forEach(doc=>{
-      let c=doc.data();
-      candidateList.innerHTML+=`
-        <input type="radio" name="vote" value="${doc.id}">
-        <b>${c.name}</b><br>${c.manifesto}<br><br>`;
-    });
-    candidateList.innerHTML+=`<button onclick="vote()">Vote</button>`;
-  });
-}
-
-function vote(){
-  let c=document.querySelector("input[name='vote']:checked");
-  if(!c) return alert("Select candidate");
-
-  let uid=auth.currentUser.uid;
-  let voterRef=db.collection("voters").doc(uid);
-  let candRef=db.collection("candidates").doc(c.value);
-
-  db.runTransaction(async t=>{
-    let v=await t.get(voterRef);
-    if(v.data().hasVoted) throw "Already voted";
-
-    t.update(voterRef,{hasVoted:true,votedFor:c.value});
-    t.update(candRef,{votes:firebase.firestore.FieldValue.increment(1)});
-  })
-  .then(()=>alert("Vote submitted"))
-  .catch(e=>alert(e));
-}
-
-/* CANDIDATE */
-function saveManifesto(){
-  let uid=auth.currentUser.uid;
-  db.collection("candidates").doc(uid)
-  .update({manifesto:manifesto.value})
-  .then(()=>candMsg.innerHTML="Saved");
-}
-
-/* ADMIN */
-function loadAdmin(){
-  loadVoters();
-  loadCandidatesAdmin();
-  loadVoteCount();
-}
-
-function loadVoters(){
-  db.collection("voters").onSnapshot(snap=>{
-    voterList.innerHTML="";
-    let i=1;
-    snap.forEach(d=>{
-      let v=d.data();
-      voterList.innerHTML+=`
-      <tr>
-        <td>${i++}</td>
-        <td>${v.name}</td>
-        <td>${v.email}</td>
-        <td><button class="danger small"
-          onclick="removeVoter('${d.id}')">Remove</button></td>
-      </tr>`;
-    });
-  });
-}
-function removeVoter(id){
-  if(confirm("Remove voter?"))
-    db.collection("voters").doc(id).delete();
-}
-
-function loadCandidatesAdmin(){
-  db.collection("candidates").onSnapshot(snap=>{
-    candidateAdminList.innerHTML="";
-    voteCount.innerHTML="";
-    let arr=[];
-    snap.forEach(d=>{
-      let c=d.data();
-      arr.push(c);
-      candidateAdminList.innerHTML+=`
-        ${c.name} (${c.email})
-        <button class="danger small"
-        onclick="removeCandidate('${d.id}')">Remove</button><br>`;
-      voteCount.innerHTML+=`${c.name}: ${c.votes} votes<br>`;
-    });
-    showWinner(arr);
-  });
-}
-function removeCandidate(id){
-  if(confirm("Remove candidate?"))
-    db.collection("candidates").doc(id).delete();
-}
-
-function showWinner(arr){
-  if(arr.length===0){
-    winnerResult.innerHTML="No candidates";
-    return;
-  }
-  arr.sort((a,b)=>b.votes-a.votes);
-  let top=arr[0].votes;
-  let tied=arr.filter(x=>x.votes===top);
-  if(top===0 || tied.length>1){
-    winnerResult.innerHTML="No Winner (Tie / No votes)";
-  }else{
-    let margin=arr[0].votes-(arr[1]?.votes||0);
-    winnerResult.innerHTML=
-      `${arr[0].name} wins by ${margin} vote(s)`;
-  }
-}
-
-/* RE-ELECTION */
-function reElection(){
-  if(!confirm("Start re-election?")) return;
-
-  db.collection("candidates").get().then(s=>{
-    s.forEach(d=>d.ref.delete());
-  });
-  db.collection("voters").get().then(s=>{
-    s.forEach(d=>d.ref.update({hasVoted:false,votedFor:null}));
-  });
-}
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 </body>
 </html>
