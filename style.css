@@ -1,0 +1,247 @@
+/* ================= GLOBAL ================= */
+
+body{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    margin:0;
+    padding:0;
+    text-align:center;
+    color:#333;
+}
+
+h1{
+    background:#111;
+    color:white;
+    padding:20px;
+    margin:0;
+    letter-spacing:2px;
+}
+
+/* ================= SECTION CARD ================= */
+
+.section{
+    background:white;
+    width:70%;
+    margin:40px auto;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* ================= INPUT FIELDS ================= */
+
+input,select,textarea{
+
+    width:70%;
+    padding:10px;
+    margin:10px 0;
+    border-radius:5px;
+    border:1px solid #ccc;
+    font-size:15px;
+}
+
+.password-box{
+position:relative;
+width:70%;
+margin:auto;
+}
+
+.password-box span{
+position:absolute;
+right:10px;
+top:12px;
+cursor:pointer;
+}
+input:focus,select:focus,textarea:focus{
+    border:1px solid #2a5298;
+    outline:none;
+}
+/* CENTER LAYOUT */
+
+.section{
+width:600px;
+margin:auto;
+text-align:center;
+}
+
+/* INPUT GROUP */
+
+.input-group{
+width:70%;
+margin:15px auto;
+position:relative;
+}
+
+/* ALL INPUTS SAME SIZE */
+
+.input-group input,
+.input-group select{
+
+width:100%;
+height:45px;
+
+padding:10px 15px;
+
+font-size:16px;
+
+border-radius:8px;
+
+border:1px solid #ccc;
+
+box-sizing:border-box;
+}
+
+/* PASSWORD ICON */
+
+.password-group .toggle-password{
+
+position:absolute;
+
+right:15px;
+top:50%;
+
+transform:translateY(-50%);
+
+cursor:pointer;
+
+font-size:18px;
+
+color:#444;
+
+}
+
+/* BUTTON STYLE */
+
+button{
+
+padding:10px 20px;
+
+margin:10px;
+
+border:none;
+
+border-radius:8px;
+
+background:#2f4f8f;
+
+color:white;
+
+font-size:16px;
+
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#1e3570;
+
+}
+/* ================= BUTTONS ================= */
+
+button{
+
+    padding:10px 18px;
+    margin:10px 5px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:14px;
+    color:white;
+    background:#2a5298;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#1e3c72;
+    transform:scale(1.05);
+}
+
+/* ================= ADMIN BUTTON COLORS ================= */
+
+button:nth-child(1){background:#28a745;}
+button:nth-child(2){background:#17a2b8;}
+button:nth-child(3){background:#6f42c1;}
+button:nth-child(4){background:#ffc107;color:black;}
+button:nth-child(5){background:#dc3545;}
+button:nth-child(6){background:#343a40;}
+
+button:nth-child(1):hover{background:#218838;}
+button:nth-child(5):hover{background:#c82333;}
+
+/* ================= TABLE STYLE ================= */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    font-size:14px;
+}
+
+table th{
+    background:#2a5298;
+    color:white;
+    padding:10px;
+}
+
+table td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+}
+
+table tr:nth-child(even){
+    background:#f2f2f2;
+}
+
+table tr:hover{
+    background:#e6f0ff;
+}
+
+/* ================= CANDIDATE CARDS ================= */
+
+#candidateList div{
+    background:#f8f9fa;
+    border-left:5px solid #2a5298;
+    padding:15px;
+    margin:10px;
+    border-radius:5px;
+    text-align:left;
+}
+
+/* ================= RESULTS ================= */
+
+#adminResults{
+
+    background:#f1f1f1;
+    padding:15px;
+    border-radius:5px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+/* ================= SEARCH INPUT ================= */
+
+#adminContent input{
+
+    width:50%;
+    padding:8px;
+    margin-bottom:10px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:900px){
+
+.section{
+    width:90%;
+}
+
+input,select,textarea{
+    width:90%;
+}
+
+table{
+    font-size:12px;
+}
+
+}

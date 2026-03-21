@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Online Voting System</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+</head>
+
+<body>
+
+<h1>Online Voting System</h1>
+
+<!-- ================= DASHBOARD ================= -->
+<div class="section" id="dashboard">
+
+<h2>Login</h2>
+
+<div class="input-group">
+<input id="loginEmail" placeholder="Email">
+</div>
+
+<div class="input-group password-group">
+    <input id="loginPass" type="password" placeholder="Password">
+    <span class="toggle-password" onclick="togglePassword()">👁</span>
+</div>
+
+<div class="input-group">
+<select id="loginRole">
+<option value="voter">Voter</option>
+<option value="candidate">Candidate</option>
+</select>
+</div>
+
+
+<button onclick="login()">Login</button>
+<button onclick="show('register')">Register</button>
+
+<br><br>
+
+<button onclick="showForgot()">Forgot Password?</button>
+
+</div>
+
+
+<!-- ================= FORGOT PASSWORD ================= -->
+<div class="section" id="forgotSection" style="display:none;">
+
+<h2>Reset Password</h2>
+
+<input id="resetEmail" placeholder="Enter VIT Email">
+<br>
+
+<button onclick="sendResetOTP()">Send OTP</button>
+
+<br><br>
+
+<input id="resetOTP" placeholder="Enter OTP">
+
+<br>
+
+<input id="newPass" type="password" placeholder="New Password">
+
+<br><br>
+
+<button onclick="resetPassword()">Reset Password</button>
+<button onclick="show('dashboard')">Back</button>
+
+</div>
+
+
+
+<!-- ================= REGISTER ================= -->
+<div class="section" id="register" style="display:none;">
+
+<h2>Register</h2>
+
+<input id="rname" placeholder="Full Name">
+<br>
+
+<input id="remail" placeholder="VIT Email (name.prn@vit.edu)">
+<br>
+
+<input id="rpass" type="password" placeholder="Password">
+<br>
+
+<select id="rrole">
+<option value="voter">Voter</option>
+<option value="candidate">Candidate</option>
+</select>
+
+<br><br>
+
+<button onclick="sendRegisterOTP()">Send OTP</button>
+
+<br><br>
+
+<input id="registerOTP" placeholder="Enter OTP">
+
+<br><br>
+
+<button onclick="verifyRegisterOTP()">Verify & Register</button>
+<button onclick="show('dashboard')">Back</button>
+
+</div>
+
+
+
+<!-- ================= VOTER PANEL ================= -->
+<div class="section" id="voter" style="display:none;">
+
+<h2>Voter Panel</h2>
+
+<div id="candidateList"></div>
+
+<br>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+
+
+<!-- ================= CANDIDATE PANEL ================= -->
+<div class="section" id="candidate" style="display:none;">
+
+<h2>Candidate Panel</h2>
+
+<textarea id="manifesto"
+placeholder="Enter your manifesto here..."
+style="width:90%; height:100px;"></textarea>
+
+<br><br>
+
+<button onclick="saveManifesto()">Save Manifesto</button>
+
+<p id="candMsg"></p>
+
+<br>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+
+
+<!-- ================= ADMIN PANEL ================= -->
+<div class="section" id="adminPanel" style="display:none;">
+
+<h2>Admin Dashboard</h2>
+
+<div id="adminResults"></div>
+
+<hr>
+
+<button onclick="exportResultsToExcel()">📁 Export Results</button>
+
+<button onclick="showVoters()">👁️ View Voters</button>
+
+<button onclick="showCandidates()">👁️ View Candidates</button>
+
+<button onclick="toggleElection()" id="electionBtn"></button>
+
+<button onclick="reelection()">⭕ Re-election</button>
+
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<div id="adminContent"></div>
+
+<hr>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
